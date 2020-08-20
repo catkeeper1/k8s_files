@@ -1,6 +1,6 @@
 
 # How to install a kubernates cluster
-This document introduce how to setup kubernates cluster in CentOS.
+This document introduce how to setup kubernates cluster in CentOS 7.
 
 ## Install docker
 
@@ -29,3 +29,16 @@ yum-config-manager \
 ```
 yum install docker-ce docker-ce-cli containerd.io
 ```
+
+Run below command to enable docker service
+```
+systemctl enable docker
+systemctl start docker
+
+```
+
+Run below command to verify docker installation
+```
+docker run hello-world
+```
+
