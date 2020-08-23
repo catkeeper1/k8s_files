@@ -1,6 +1,24 @@
 
 # How to install a kubernates cluster
-This document introduce how to setup kubernates cluster in CentOS 7.
+This document introduce how to setup kubernates cluster in CentOS 7.8
+
+
+##Check the OS environment
+Run `cat /etc/redhat-release ` to check the OS version. Make sure the version is 7.8, 7.7 or 7.6
+
+Run `lscpu` to check the number of available CPU core. The minimum number of CPU cores is 2.
+
+Run below commands to change the hostname to make sure all hostnames of nodes in the clusters are unique and not equals to "localhost".
+
+```
+# modify hostname
+hostnamectl set-hostname your-new-host-name
+# check the modified result
+hostnamectl status
+# update the host file
+echo "127.0.0.1   $(hostname)" >> /etc/hosts
+```
+
 
 ## Install docker
 
@@ -41,4 +59,5 @@ Run below command to verify docker installation
 ```
 docker run hello-world
 ```
+
 
