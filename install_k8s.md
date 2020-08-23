@@ -3,7 +3,7 @@
 This document introduce how to setup kubernates cluster in CentOS 7.8
 
 
-##Check the OS environment
+## Check the OS environment
 
 Run `cat /etc/redhat-release ` to check the OS version. Make sure the version is 7.8, 7.7 or 7.6
 
