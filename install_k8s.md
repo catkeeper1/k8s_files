@@ -4,6 +4,7 @@ This document introduce how to setup kubernates cluster in CentOS 7.8
 
 
 ##Check the OS environment
+
 Run `cat /etc/redhat-release ` to check the OS version. Make sure the version is 7.8, 7.7 or 7.6
 
 Run `lscpu` to check the number of available CPU core. The minimum number of CPU cores is 2.
@@ -18,6 +19,8 @@ hostnamectl status
 # update the host file
 echo "127.0.0.1   $(hostname)" >> /etc/hosts
 ```
+
+Run comnmands `ip route show` and `ip address` to check what are the default network adaptor and the ip address. Make sure all nodes in the cluster can access their default IP each other(no firewall, NAT ... blocking the communication).
 
 
 ## Install docker
