@@ -3,7 +3,7 @@
 This document introduce how to setup kubernates cluster in CentOS 7.8
 
 
-## Check the OS environment
+## OS configuration
 
 Run `cat /etc/redhat-release ` to check the OS version. Make sure the version is 7.8, 7.7 or 7.6
 
@@ -21,6 +21,28 @@ echo "127.0.0.1   $(hostname)" >> /etc/hosts
 ```
 
 Run comnmands `ip route show` and `ip address` to check what are the default network adaptor and the ip address. Make sure all nodes in the cluster can access their default IP each other(no firewall, NAT ... blocking the communication).
+
+Shutdown firewall:
+```
+systemctl stop firewalld
+systemctl disable firewalld
+```
+
+Shutdown Selinux
+```
+setenforce 0
+sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+```
+
+Disable swap
+```
+swapoff -a
+yes | cp /etc/fstab /etc/fstab_bak
+cat /etc/fstab_bak |grep -v swap > /etc/fstab
+```
+
+
+
 
 
 ## Install docker
