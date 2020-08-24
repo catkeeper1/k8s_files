@@ -55,8 +55,13 @@ Run below command to enable docker service
 ```
 systemctl enable docker
 systemctl start docker
-
 ```
+
+If your server is behind GFW, please use docker image registry in Alicloud by adding below statement to `~/.bashrc`
+```
+export REGISTRY_MIRROR=https://registry.cn-hangzhou.aliyuncs.com
+```
+
 
 Run below command to verify docker installation
 ```
