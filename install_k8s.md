@@ -51,21 +51,24 @@ net.ipv6.conf.default.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 1
 net.ipv6.conf.all.forwarding = 1
 ```
-
+Execute command `sysctl -p` to make config above effective
 
 
 ## Install docker
 
 Run below script to remove existing docker installation:
 ```
-yum remove docker \
-                  docker-client \
-                  docker-client-latest \
-                  docker-common \
-                  docker-latest \
-                  docker-latest-logrotate \
-                  docker-logrotate \
-                  docker-engine
+yum remove -y docker \
+    docker-client \
+    docker-client-latest \
+    docker-ce-cli \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-selinux \
+    docker-engine-selinux \
+    docker-engine
 
 ```
 
@@ -79,7 +82,7 @@ yum-config-manager \
 ```
 
 ```
-yum install docker-ce docker-ce-cli containerd.io
+yum install -y docker-ce-19.03.8 docker-ce-cli-19.03.8 containerd.io
 ```
 
 Run below command to enable docker service
@@ -88,9 +91,17 @@ systemctl enable docker
 systemctl start docker
 ```
 
-If your server is behind GFW, please use docker image registry in Alicloud by adding below statement to `~/.bashrc`
+If your server is behind GFW, please use docker image registry in Alicloud. Open `/etc/docker/daemon.json` and add 
+below content:
 ```
-export REGISTRY_MIRROR=https://registry.cn-hangzhou.aliyuncs.com
+{
+  "registry-mirrors": ["https://registry.cn-hangzhou.aliyuncs.com"]
+}
+```
+Run below commands to reload above setting
+```
+systemctl daemon-reload
+systemctl restart docker
 ```
 
 
@@ -100,3 +111,28 @@ docker run hello-world
 ```
 
 
+
+## Install kubeadm
+Install kubernetes repository:
+```
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+```
+
+Remove existing installation:
+```
+yum remove -y kubelet kubeadm kubectl
+```
+
+Install kubeadm:
+```
+yum install -y kubelet-1.18.8 kubeadm-1.18.8 kubectl-1.18.8
+```
