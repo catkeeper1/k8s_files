@@ -98,6 +98,19 @@ below content:
   "registry-mirrors": ["https://registry.cn-hangzhou.aliyuncs.com"]
 }
 ```
+
+Change the cgroup driver from the default value to systemd. If this is not changed, when a worker node is added
+to the cluster, warning message will be prompted `detected "cgroupfs" as the Docker cgroup driver. 
+The recommended driver is "systemd".Please follow the guide at https://kubernetes.io/docs/setup/cri/`.
+Open `/etc/docker/daemon.json` and add below content:
+```
+{
+  ... 
+  ,
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+```
+
 Run below commands to reload above setting
 ```
 systemctl daemon-reload
@@ -135,4 +148,7 @@ yum remove -y kubelet kubeadm kubectl
 Install kubeadm:
 ```
 yum install -y kubelet-1.18.8 kubeadm-1.18.8 kubectl-1.18.8
+
+systemctl enable kubelet 
+systemctl start kubelet
 ```
