@@ -152,3 +152,41 @@ yum install -y kubelet-1.18.8 kubeadm-1.18.8 kubectl-1.18.8
 systemctl enable kubelet 
 systemctl start kubelet
 ```
+
+Open `/etc/hosts` add the DNS name and IP of the master node in it. If the master node already has a DNS name,
+please ignore this step. 
+
+Run below command to create a kubeadm config file. Please replace "k8s.apiserver" with your master node DNS name. 
+Please make sure the serviceSubnet and podSubnet is different from the subnet of your nodes. 
+```
+cat <<EOF > ./kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.18.8
+imageRepository: registry.aliyuncs.com/k8sxio
+controlPlaneEndpoint: "k8s.apiserver:6443"
+networking:
+  serviceSubnet: "10.96.0.0/16"
+  podSubnet: "10.100.0.1/16"
+  dnsDomain: "cluster.local"
+EOF
+```
+Please refer `https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2` for the completed reference
+about kubeadm config file.
+
+Please run `kubeadm init --config=kubeadm-config.yaml --upload-certs` to init kubeadm.
+
+Run below command to setup the config for kubectl:
+```
+mkdir /root/.kube/
+cp -i /etc/kubernetes/admin.conf /root/.kube/config
+```
+
+Install calico CNI. Please run `curl https://docs.projectcalico.org/manifests/calico.yaml -O` to download 
+the installation file. If you cannot download it because of network issue, please use the `calico3.15.2.yaml` that
+just besides this file(rename it to `calico3.15.2.yaml`). Then run command `kubectl apply -f calico.yaml` to install
+calico CNI.
+
+Run command `watch kubectl get pod -n kube-system -o wide` to check the status of pods in kube-system namespace.
+Wait until all of them are in "running" status. Run `kubectl get node` to check the node status. 
+
