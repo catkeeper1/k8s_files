@@ -158,6 +158,9 @@ please ignore this step.
 
 Run below command to create a kubeadm config file. Please replace "k8s.apiserver" with your master node DNS name. 
 Please make sure the serviceSubnet and podSubnet is different from the subnet of your nodes. 
+
+## Init master node
+
 ```
 cat <<EOF > ./kubeadm-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
@@ -189,4 +192,21 @@ calico CNI.
 
 Run command `watch kubectl get pod -n kube-system -o wide` to check the status of pods in kube-system namespace.
 Wait until all of them are in "running" status. Run `kubectl get node` to check the node status. 
+
+If you want pod scheduled to master node as well, please run command 
+`kubectl taint nodes --all node-role.kubernetes.io/master-`.
+
+## Init worker node
+In master node run `kubeadm token create --print-join-command` to get the join command. 
+The command may looks like 
+```
+kubeadm join k8s.apiserver:6443 --token 7dugxy.hb7voxef53yrvc38     --discovery-token-ca-cert-hash sha256:29b1eb1777a486e6030898f12163ab3e4a2b6584897593d833e38ddf1c032cce
+
+```
+Then, run the command to join the cluster. 
+
+
+
+
+
 
