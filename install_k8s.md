@@ -205,8 +205,52 @@ kubeadm join k8s.apiserver:6443 --token 7dugxy.hb7voxef53yrvc38     --discovery-
 ```
 Then, run the command to join the cluster. 
 
+## Test with a deployment
+Create a file `webtest.yaml`, place below sources in it:
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: katacoda/docker-http-server:latest
+        ports:
+        - containerPort: 80
 
+##
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp1-svc
+  labels:
+    app: webapp1
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: webapp1
 
+```
 
+Run command `kubectl get pod`. This commands should return 2 pods with prefix `webapp1`. Run command `kubectl get svc`
+. This command should return 1 service with prefix `webapp1`
+
+Run command ` curl localhost:30080`, it should return somethng like below:
+```
+<h1>This request was processed by host: webapp1-7c456784b7-xb2cm</h1>
+```
 
 
