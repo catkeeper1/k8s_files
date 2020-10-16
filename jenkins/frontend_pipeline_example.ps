@@ -1,0 +1,31 @@
+def remote = [:]
+remote.name = "deploy dev"
+remote.host = "47.107.123.247"
+remote.allowAnyHosts = true
+
+node {
+    withCredentials([sshUserPrivateKey(credentialsId: 'cmhk_dev', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
+        remote.user = userName
+        remote.identityFile = identity
+
+        stage ("checkout") {
+            git branch: 'DEV', credentialsId: 'gt_gitlab', url: 'https://gitlab.gtomato.com/cmhk/sgs/CMS-Frontend.git'
+        }
+        stage ("build") {
+            nodejs('NodeJS') {
+                sh 'npm install  && npm run dev-build'
+            }
+
+        }
+
+         stage ("deploy dev"){
+
+            sh 'rm -rf cms && mv dist cms && rm -rf dist'
+
+            sshPut remote: remote, from: 'cms', into: '/var/www/html'
+
+        }
+    }
+}
+
+

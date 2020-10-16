@@ -1,0 +1,73 @@
+properties([
+    parameters([
+    //     gitParameter( name: 'P_TAG',
+    //                  type: 'PT_TAG',
+    //                  sortMode: 'ASCENDING',
+    //                  defaultValue: 'DEV')
+        choice(
+            description: 'please choose which app will be deployed',
+            name: 'P_DEPLOY_APP',
+            choices: ['ALL', 'TGS', 'CMS']
+        )
+    ])
+])
+
+
+def remote = [:]
+remote.name = "deploy dev"
+remote.host = "47.107.123.247"
+remote.allowAnyHosts = true
+
+node {
+    withCredentials([sshUserPrivateKey(credentialsId: 'cmhk_dev', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
+        remote.user = userName
+        remote.identityFile = identity
+        stage ("checkout") {
+            checkout([$class: 'GitSCM',
+                        // branches: [[name: "${params.P_TAG}"]],
+                        branches: [[name: "DEV"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[credentialsId: 'gt_gitlab', url: 'https://gitlab.gtomato.com/cmhk/sgs/backend.git']]])
+
+            // git branch: "${params.P_TAG}", credentialsId: 'gt_gitlab', url: 'https://gitlab.gtomato.com/cmhk/sgs/backend.git'
+        }
+        stage ("build package") {
+            withMaven(maven: 'maven_3.6.3') {
+                sh 'mvn clean install -Dspring.profiles.active=devci'
+            }
+        }
+
+        stage (" parallel steps") {
+        parallel 'sonarqube checking': {
+
+            withMaven(maven: 'maven_3.6.3') {
+                sh 'mvn sonar:sonar'
+            }
+
+
+        }, 'TGS deploy': {
+
+            if(params.P_DEPLOY_APP == 'TGS' || params.P_DEPLOY_APP == 'ALL') {
+                sshPut remote: remote, from: 'sgs-backend/target/sgs-backend-1.0-SNAPSHOT.jar', into: '/ws/sgs_demo/tgs/upload'
+
+                sshCommand remote: remote, command: 'cd /ws/sgs_demo/tgs/ && bash deploy_jar.sh'
+            }
+
+        }, 'CMS deploy' : {
+
+
+            if(params.P_DEPLOY_APP == 'CMS' || params.P_DEPLOY_APP == 'ALL') {
+                sshPut remote: remote, from: 'cms-backend/target/cms-backend-1.0-SNAPSHOT.jar', into: '/ws/sgs_demo/cms/upload'
+
+                sshCommand remote: remote, command: 'cd /ws/sgs_demo/cms/ && bash deploy_jar.sh'
+            }
+
+        }
+        }
+
+    }
+}
+
+
