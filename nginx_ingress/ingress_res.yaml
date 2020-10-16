@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gzlocal-ingress
+  annotations:
+    nginx.org/client-max-body-size: "50m"
+spec:
+  rules:
+    - host: gzserver1.internal.gtomato.com.cn
+      http:
+        paths:
+          - path: /sonarqube
+            backend:
+              serviceName: sonarqube-svc
+              servicePort: 9000

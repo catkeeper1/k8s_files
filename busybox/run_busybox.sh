@@ -1,0 +1,1 @@
+kubectl exec -ti busybox bash
