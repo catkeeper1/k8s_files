@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-pv
+  labels:
+    app: jenkins-pv
+spec:
+  capacity:
+    storage: 10Gi
+  storageClassName: jenkins-data-sc
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    type: Directory
+    path: /ws/jenkins/data/jenkins_home
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkins-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: jenkins-data-sc
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      app: jenkins-pv
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  labels:
+    app: jenkins-deployment
+spec:
+  selector:
+    matchLabels:
+      app: jenkins-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-app
+    spec:
+      containers:
+        - name: jenkins-container
+          image: jenkins/jenkins:2.235.1-lts-centos7
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: jnlp
+              containerPort: 50000
+          env:
+            - name: LIMITS_MEMORY
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: 1Mi
+            - name: "JAVA_OPTS"
+              value: "
+                           -Xmx2048m
+                   -Duser.timezone=Asia/Shanghai
+                   -Dfile.encoding=UTF-8
+                 "
+            - name: "JENKINS_OPTS"
+              value: "--prefix=/jenkins"
+          volumeMounts:
+            - name: jenkins-data-storage
+              mountPath: /var/jenkins_home
+      volumes:
+        - name: jenkins-data-storage
+          persistentVolumeClaim:
+            claimName: jenkins-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-svc
+  labels:
+    app: jenkins-svc
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 31388
+    - name: jnlp
+      port: 50000
+      targetPort: 50000
+      nodePort: 31389
+  selector:
+    app: jenkins-app
+
