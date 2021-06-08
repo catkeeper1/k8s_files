@@ -253,4 +253,8 @@ Run command ` curl localhost:30080`, it should return somethng like below:
 <h1>This request was processed by host: webapp1-7c456784b7-xb2cm</h1>
 ```
 
-
+Download yaml file for metrics server from `https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml`
+If your cluster is behind GWF, please update the image in this yaml file from 
+`k8s.gcr.io/metrics-server/metrics-server:v0.5.0` to `willdockerhub/metrics-server:v0.5.0`. Add parameter 
+`--kubelet-insecure-tls` to the deployment to disable the cert validation. 
+The updated file is placed at `/metrics_server.yaml` in this repository.
