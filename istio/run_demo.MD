@@ -30,6 +30,9 @@ kubectl apply -f samples/addons
 kubectl rollout status deployment/kiali -n istio-system
 ```
  
-
+After you run the demo. If you want to uninstall istio, please run:
+```
+istioctl x uninstall --purge
+```
 
 
